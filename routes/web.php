@@ -16,7 +16,34 @@ use App\Http\Controllers\LaporanKeuanganController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    // return view('welcome');
+
+    $data['kategori'] = DB::table('category_keuangan')->where('bActive', 1)->get();
+    $data['num_rows'] = DB::table('transaksi_keuangan')->count();
+    $data['kode'] = date('Ymd');
+
+    $data['laporan_harian'] = DB::select("SELECT
+                                        laporan.szTransId,
+                                        laporan.szCategoryId,
+                                        kategori.szDesc AS kategori_desc,
+                                        laporan.szDesc,
+                                        DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') AS dtmTrans,
+                                        (CASE
+                                            WHEN kategori.szType = 'MASUK' THEN laporan.decAmount
+                                            ELSE 0
+                                        END) decAmountMasuk,
+                                        (CASE
+                                            WHEN kategori.szType = 'KELUAR' THEN laporan.decAmount
+                                            ELSE 0
+                                        END) decAmountKeluar
+                                        FROM transaksi_keuangan laporan
+                                        LEFT JOIN category_keuangan kategori
+                                        ON kategori.szCategoryId = laporan.szCategoryId
+                                        WHERE DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') = '" . date('Y-m-d') . "'
+                                        ORDER BY DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') ASC");
+
+    //return view with data
+    return view('laporan_keuangan/laporan_harian', compact('data'));
 });
 
 Route::get('/CategoryKeuangan', [CategoryKeuanganController::class, 'index']);
