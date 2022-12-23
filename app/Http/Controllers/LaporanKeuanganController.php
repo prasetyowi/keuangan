@@ -238,4 +238,19 @@ class LaporanKeuanganController extends Controller
             'data'    => $post
         ]);
     }
+
+    public function get_limit_by_category($id)
+    {
+        $data['limit'] = DB::table('category_keuangan')->where('szCategoryId', $id)->get()[0]->decLimit;
+        $data['total_amount'] = DB::select("SELECT
+                                                SUM(laporan.decAmount) decAmount
+                                                FROM transaksi_keuangan laporan
+                                                LEFT JOIN category_keuangan kategori
+                                                ON kategori.szCategoryId = laporan.szCategoryId
+                                                WHERE DATE_FORMAT(laporan.dtmTrans, '%Y') = '" . date('Y') . "'
+                                                AND DATE_FORMAT(laporan.dtmTrans, '%m') = '" . date('m') . "'
+                                                AND laporan.szCategoryId = '" . $id . "' ;")[0]->decAmount;
+
+        return $data;
+    }
 }

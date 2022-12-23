@@ -34,3 +34,5 @@ Route::post('/LaporanKeuangan/add', [LaporanKeuanganController::class, 'add']);
 Route::get('/LaporanKeuangan/edit/{id}', [LaporanKeuanganController::class, 'edit']);
 Route::post('/LaporanKeuangan/update', [LaporanKeuanganController::class, 'update']);
 Route::get('/LaporanKeuangan/hapus/{id}', [LaporanKeuanganController::class, 'hapus']);
+Route::get('/LaporanKeuangan/get_limit_by_category/{id}', [LaporanKeuanganController::class, 'get_limit_by_category']);
+Route::get('/LaporanKeuangan/get_total_amount_in_month/{id}', [LaporanKeuanganController::class, 'get_total_amount_in_month']);

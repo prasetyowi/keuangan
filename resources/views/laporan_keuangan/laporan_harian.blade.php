@@ -108,11 +108,14 @@
 
                   <input type="hidden" id="action" value="">
                   <input type="hidden" id="LaporanKeuangan-szTransId" value="">
+                  <input type="hidden" id="LaporanKeuangan-decLimit" value="">
+                  <input type="hidden" id="LaporanKeuangan-decMax" value="">
+                  <input type="hidden" id="LaporanKeuangan-decTotalAmount" value="">
 
                   <div class="form-group">
                     <label for="form-field-select-3">Kategori</label>
                     <div>
-                      <select class="form-control" id="LaporanKeuangan-szCategoryId" data-placeholder="Choose a State..." style="width:100%;">
+                      <select class="form-control" id="LaporanKeuangan-szCategoryId" data-placeholder="Choose a State..." style="width:100%;" onchange="GetLimitByCategory(this.value)">
                         <option value="">** Pilih Tipe **</option>
                         @foreach($data['kategori'] as $value)
                         <option value="{{ $value->szCategoryId }}">{{ $value->szDesc }}</option>
@@ -268,17 +271,35 @@
     });
   }
 
+  function GetLimitByCategory(szCategoryId) {
+    $.ajax({
+      async: false,
+      type: 'GET',
+      url: "/LaporanKeuangan/get_limit_by_category/" + szCategoryId,
+      dataType: "JSON",
+      success: function(response) {
+        $("#LaporanKeuangan-decLimit").val(response.limit);
+        $("#LaporanKeuangan-total_amount").val(response.total_amount);
+      }
+    });
+
+  }
+
   $("#btnadd").click(function() {
     $("#action").val("add");
 
     $("#LaporanKeuangan-szCategoryId").val('');
     $("#LaporanKeuangan-szDesc").val('');
     $("#LaporanKeuangan-decLimit").val('');
+    $("#LaporanKeuangan-decTotalAmount").val('');
   });
 
   $("#btnsave").click(function() {
     var szTransId = "";
     var act = $("#action").val();
+    var amount = $("#LaporanKeuangan-decAmount").val();
+    var total_amount = $("#LaporanKeuangan-total_amount").val();
+    var limit = $("#LaporanKeuangan-decLimit").val();
 
     // $('#alert-szCategoryId').hide();
     // $('#alert-szDesc').hide();
@@ -297,80 +318,89 @@
         szTransId = $("#kode").val() + $("#num_rows").val();
       }
 
-      $("#loadingkeuangan").show();
-      $("#btnsave").prop("disabled", true);
+      if (total_amount + amount <= limit) {
 
-      $.ajax({
-        async: false,
-        type: 'POST',
-        url: "/LaporanKeuangan/add",
-        data: {
-          szTransId: szTransId,
-          szCategoryId: $("#LaporanKeuangan-szCategoryId").val(),
-          szDesc: $("#LaporanKeuangan-szDesc").val(),
-          dtmTrans: $("#LaporanKeuangan-dtmTrans").val(),
-          decAmount: $("#LaporanKeuangan-decAmount").val(),
-          "_token": $("meta[name='csrf-token']").attr("content")
-        },
-        dataType: "JSON",
-        success: function(response) {
-          $("#loadingkeuangan").hide();
-          $("#btnsave").prop("disabled", false);
+        $("#loadingkeuangan").show();
+        $("#btnsave").prop("disabled", true);
 
-          if (response.success === true) {
-            Swal.fire({
-              type: 'success',
-              icon: 'success',
-              title: `${response.message}`,
-              showConfirmButton: false,
-              timer: 3000
-            });
+        $.ajax({
+          async: false,
+          type: 'POST',
+          url: "/LaporanKeuangan/add",
+          data: {
+            szTransId: szTransId,
+            szCategoryId: $("#LaporanKeuangan-szCategoryId").val(),
+            szDesc: $("#LaporanKeuangan-szDesc").val(),
+            dtmTrans: $("#LaporanKeuangan-dtmTrans").val(),
+            decAmount: $("#LaporanKeuangan-decAmount").val(),
+            "_token": $("meta[name='csrf-token']").attr("content")
+          },
+          dataType: "JSON",
+          success: function(response) {
+            $("#loadingkeuangan").hide();
+            $("#btnsave").prop("disabled", false);
 
-            $("#modal-catatan-keuangan").modal('hide');
+            if (response.success === true) {
+              Swal.fire({
+                type: 'success',
+                icon: 'success',
+                title: `${response.message}`,
+                showConfirmButton: false,
+                timer: 3000
+              });
 
-            GetAllLaporan();
+              $("#modal-catatan-keuangan").modal('hide');
+
+              GetAllLaporan();
+            }
+
+          },
+          error: function(error) {
+
+            $("#loadingkeuangan").hide();
+            $("#btnsave").prop("disabled", false);
+
+            if (error.responseJSON.szDesc) {
+
+              //show alert
+              $('#alert-szDesc').show();
+              $('#alert-szDesc').removeClass('d-none');
+              $('#alert-szDesc').addClass('d-block');
+
+              //add message to alert
+              $('#alert-szDesc').html(error.responseJSON.szDesc[0]);
+            }
+
+            if (error.responseJSON.decLimit) {
+
+              //show alert
+              $('#alert-decLimit').show();
+              $('#alert-decLimit').removeClass('d-none');
+              $('#alert-decLimit').addClass('d-block');
+
+              //add message to alert
+              $('#alert-decLimit').html(error.responseJSON.decLimit[0]);
+            }
+
+            if (error.responseJSON.szType) {
+
+              //show alert
+              $('#alert-szType').show();
+              $('#alert-szType').removeClass('d-none');
+              $('#alert-szType').addClass('d-block');
+
+              //add message to alert
+              $('#alert-szType').html(error.responseJSON.szType[0]);
+            }
           }
-
-        },
-        error: function(error) {
-
-          $("#loadingkeuangan").hide();
-          $("#btnsave").prop("disabled", false);
-
-          if (error.responseJSON.szDesc) {
-
-            //show alert
-            $('#alert-szDesc').show();
-            $('#alert-szDesc').removeClass('d-none');
-            $('#alert-szDesc').addClass('d-block');
-
-            //add message to alert
-            $('#alert-szDesc').html(error.responseJSON.szDesc[0]);
-          }
-
-          if (error.responseJSON.decLimit) {
-
-            //show alert
-            $('#alert-decLimit').show();
-            $('#alert-decLimit').removeClass('d-none');
-            $('#alert-decLimit').addClass('d-block');
-
-            //add message to alert
-            $('#alert-decLimit').html(error.responseJSON.decLimit[0]);
-          }
-
-          if (error.responseJSON.szType) {
-
-            //show alert
-            $('#alert-szType').show();
-            $('#alert-szType').removeClass('d-none');
-            $('#alert-szType').addClass('d-block');
-
-            //add message to alert
-            $('#alert-szType').html(error.responseJSON.szType[0]);
-          }
-        }
-      });
+        });
+      } else {
+        Swal.fire({
+          type: 'error',
+          icon: 'error',
+          title: 'Melebihi nilai limit'
+        });
+      }
 
     } else if (act == "edit") {
 
