@@ -55,6 +55,7 @@
 
           <input type="hidden" id="kode" value="{{ $data['kode'] }}">
           <input type="hidden" id="num_rows" value="{{ $data['num_rows'] + 1 }}">
+
           <table id="table-laporan-keuangan" class="table table-stripped table-hover">
             <thead>
               <tr>
@@ -196,8 +197,8 @@
             <tr>
               <td class="text-left">${v.kategori_desc}</td>
               <td class="text-left">${v.szDesc}</td>
-              <td class="text-right">${Math.round(v.decAmountMasuk)}</td>
-              <td class="text-right">${Math.round(v.decAmountKeluar)}</td>
+              <td class="text-right">Rp. ${Math.round(v.decAmountMasuk)}</td>
+              <td class="text-right">Rp. ${Math.round(v.decAmountKeluar)}</td>
             </tr>
           `);
 
@@ -279,7 +280,7 @@
       dataType: "JSON",
       success: function(response) {
         $("#LaporanKeuangan-decLimit").val(response.limit);
-        $("#LaporanKeuangan-total_amount").val(response.total_amount);
+        $("#LaporanKeuangan-decTotalAmount").val(response.total_amount);
       }
     });
 
@@ -297,9 +298,9 @@
   $("#btnsave").click(function() {
     var szTransId = "";
     var act = $("#action").val();
-    var amount = $("#LaporanKeuangan-decAmount").val();
-    var total_amount = $("#LaporanKeuangan-total_amount").val();
-    var limit = $("#LaporanKeuangan-decLimit").val();
+    var amount = parseInt($("#LaporanKeuangan-decAmount").val());
+    var total_amount = parseInt($("#LaporanKeuangan-decTotalAmount").val()) + amount;
+    var limit = parseInt($("#LaporanKeuangan-decLimit").val());
 
     // $('#alert-szCategoryId').hide();
     // $('#alert-szDesc').hide();
@@ -318,7 +319,7 @@
         szTransId = $("#kode").val() + $("#num_rows").val();
       }
 
-      if (total_amount + amount <= limit) {
+      if (total_amount <= limit) {
 
         $("#loadingkeuangan").show();
         $("#btnsave").prop("disabled", true);

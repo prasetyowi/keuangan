@@ -72,9 +72,11 @@
               $total_pengeluaran += round($value->decAmountKeluar);
               ?>
               <tr>
-                <td class="text-left">{{ $value->dtmTrans }}</td>
-                <td class="text-right">{{ round($value->decAmountMasuk) }}</td>
-                <td class="text-right">{{ round($value->decAmountKeluar) }}</td>
+                <td class="text-left">
+                  <a href="/LaporanKeuangan/LaporanHarianByDate/<?= date('Y-m-d', strtotime($value->dtmTrans)) ?>"> {{ $value->dtmTrans }}</a>
+                </td>
+                <td class="text-right"><a href="/LaporanKeuangan/LaporanHarianByDate/<?= date('Y-m-d', strtotime($value->dtmTrans)) ?>">Rp. {{ round($value->decAmountMasuk) }}</a></td>
+                <td class="text-right"><a href="/LaporanKeuangan/LaporanHarianByDate/<?= date('Y-m-d', strtotime($value->dtmTrans)) ?>">Rp. {{ round($value->decAmountKeluar) }}</a></td>
               </tr>
               @endforeach
             </tbody>

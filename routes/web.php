@@ -57,6 +57,7 @@ Route::get('/CategoryKeuangan/hapus/{id}', [CategoryKeuanganController::class, '
 
 Route::get('/LaporanKeuangan', [LaporanKeuanganController::class, 'index']);
 Route::get('/LaporanKeuangan/GetAllLaporan', [LaporanKeuanganController::class, 'GetAllLaporan']);
+Route::get('/LaporanKeuangan/GetAllLaporanByDate/{tgl}', [LaporanKeuanganController::class, 'GetAllLaporanByDate']);
 Route::post('/LaporanKeuangan/add', [LaporanKeuanganController::class, 'add']);
 // Route::post('/LaporanKeuangan/store', 'LaporanKeuanganController@store');
 Route::get('/LaporanKeuangan/edit/{id}', [LaporanKeuanganController::class, 'edit']);
@@ -66,3 +67,4 @@ Route::get('/LaporanKeuangan/get_limit_by_category/{id}', [LaporanKeuanganContro
 Route::get('/LaporanKeuangan/get_total_amount_in_month/{id}', [LaporanKeuanganController::class, 'get_total_amount_in_month']);
 
 Route::get('/LaporanKeuangan/LaporanMingguan', [LaporanKeuanganController::class, 'LaporanMingguan']);
+Route::get('/LaporanKeuangan/LaporanHarianByDate/{tgl}', [LaporanKeuanganController::class, 'LaporanHarianByDate']);

@@ -67,9 +67,42 @@ class LaporanKeuanganController extends Controller
         return $data;
     }
 
+    public function GetAllLaporanByDate($tgl)
+    {
+        //get all posts from Models
+        $data['laporan_harian'] = DB::select("SELECT
+                                        laporan.szTransId,
+                                        laporan.szCategoryId,
+                                        kategori.szDesc AS kategori_desc,
+                                        laporan.szDesc,
+                                        DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') AS dtmTrans,
+                                        (CASE
+                                            WHEN kategori.szType = 'MASUK' THEN laporan.decAmount
+                                            ELSE 0
+                                        END) decAmountMasuk,
+                                        (CASE
+                                            WHEN kategori.szType = 'KELUAR' THEN laporan.decAmount
+                                            ELSE 0
+                                        END) decAmountKeluar
+                                        FROM transaksi_keuangan laporan
+                                        LEFT JOIN category_keuangan kategori
+                                        ON kategori.szCategoryId = laporan.szCategoryId
+                                        WHERE DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') = '" . $tgl . "'
+                                        ORDER BY DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') ASC");
+
+        $data['num_rows'] = DB::table('transaksi_keuangan')->count();
+
+        //return view with data
+        return $data;
+    }
+
 
     public function LaporanHarian()
     {
+        $data['kategori'] = DB::table('category_keuangan')->where('bActive', 1)->get();
+        $data['num_rows'] = DB::table('transaksi_keuangan')->count();
+        $data['kode'] = date('Ymd');
+
         $data['laporan_harian'] = DB::select("SELECT
                                         laporan.szTransId,
                                         laporan.szCategoryId,
@@ -85,6 +118,36 @@ class LaporanKeuanganController extends Controller
 
         //return view with data
         return view('laporan_keuangan/laporan_harian', compact('data'));
+    }
+
+    public function LaporanHarianByDate($tgl)
+    {
+        $data['kategori'] = DB::table('category_keuangan')->where('bActive', 1)->get();
+        $data['num_rows'] = DB::table('transaksi_keuangan')->count();
+        $data['kode'] = date('Ymd');
+
+        $data['laporan_harian'] = DB::select("SELECT
+                                        laporan.szTransId,
+                                        laporan.szCategoryId,
+                                        kategori.szDesc AS kategori_desc,
+                                        laporan.szDesc,
+                                        DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') AS dtmTrans,
+                                        (CASE
+                                            WHEN kategori.szType = 'MASUK' THEN laporan.decAmount
+                                            ELSE 0
+                                        END) decAmountMasuk,
+                                        (CASE
+                                            WHEN kategori.szType = 'KELUAR' THEN laporan.decAmount
+                                            ELSE 0
+                                        END) decAmountKeluar
+                                        FROM transaksi_keuangan laporan
+                                        LEFT JOIN category_keuangan kategori
+                                        ON kategori.szCategoryId = laporan.szCategoryId
+                                        WHERE DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') = '" . $tgl . "'
+                                        ORDER BY DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') ASC");
+
+        //return view with data
+        return view('laporan_keuangan/laporan_harian_by_date', compact('data'));
     }
 
     public function LaporanMingguan()
@@ -243,7 +306,7 @@ class LaporanKeuanganController extends Controller
     {
         $data['limit'] = DB::table('category_keuangan')->where('szCategoryId', $id)->get()[0]->decLimit;
         $data['total_amount'] = DB::select("SELECT
-                                                SUM(laporan.decAmount) decAmount
+                                                IFNULL(SUM(laporan.decAmount),0) decAmount
                                                 FROM transaksi_keuangan laporan
                                                 LEFT JOIN category_keuangan kategori
                                                 ON kategori.szCategoryId = laporan.szCategoryId
