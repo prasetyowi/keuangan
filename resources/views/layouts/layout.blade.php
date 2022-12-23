@@ -98,7 +98,7 @@
 					<b class="arrow"></b>
 				</li>
 				<li>
-					<a href="category_keuangan.php">
+					<a href="/CategoryKeuangan">
 						<i class="menu-icon fa fa-list-alt"></i>
 						<span class="menu-text"> Kategori Keuangan</span>
 					</a>
