@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoryKeuanganController;
 use App\Http\Controllers\LaporanKeuanganController;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
