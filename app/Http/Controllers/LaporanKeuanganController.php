@@ -89,7 +89,7 @@ class LaporanKeuanganController extends Controller
 
     public function LaporanMingguan()
     {
-        $data['laporan_harian'] = DB::select("SELECT
+        $data['laporan_mingguan'] = DB::select("SELECT
                                                 DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') AS dtmTrans,
                                                 SUM(CASE
                                                     WHEN kategori.szType = 'MASUK' THEN laporan.decAmount

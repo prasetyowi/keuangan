@@ -84,14 +84,14 @@
 					<b class="arrow"></b>
 				</li>
 				<li>
-					<a href="/LaporanKeuangan">
+					<a href="/LaporanKeuangan/LaporanMingguan">
 						<i class="menu-icon fa fa-list-alt"></i>
 						<span class="menu-text"> Laporan Mingguan</span>
 					</a>
 					<b class="arrow"></b>
 				</li>
 				<li>
-					<a href="/LaporanKeuangan">
+					<a href="/LaporanKeuangan/LaporanBulanan">
 						<i class="menu-icon fa fa-calendar"></i>
 						<span class="menu-text"> Laporan Bulanan</span>
 					</a>

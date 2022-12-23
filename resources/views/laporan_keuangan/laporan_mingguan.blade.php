@@ -1,10 +1,33 @@
-<?php include "layouts/header.php"; ?> <div class="main-content">
+<!-- Menghubungkan dengan view template master -->
+@extends('../layouts/layout')
+
+<!-- isi bagian judul halaman -->
+<!-- cara penulisan isi section yang pendek -->
+@section('judul_halaman', 'Kategori Keuangan - Catatan Keuangan')
+
+@section('konten')
+<div class="main-content">
   <div class="main-content-inner">
+    <div class="breadcrumbs ace-save-state" id="breadcrumbs">
+      <ul class="breadcrumb">
+        <li>
+          <i class="ace-icon fa fa-home home-icon"></i>
+          <a href="#">Home</a>
+        </li>
+        <li class="active">Laporan Keuangan Harian</li>
+      </ul><!-- /.breadcrumb -->
+
+      <div class="nav-search" id="nav-search">
+        <form class="form-search">
+          <span class="input-icon">
+            <input type="text" placeholder="Search ..." class="nav-search-input" id="nav-search-input" autocomplete="off" />
+            <i class="ace-icon fa fa-search nav-search-icon"></i>
+          </span>
+        </form>
+      </div><!-- /.nav-search -->
+    </div>
+
     <div class="page-content">
-      <div class="page-header">
-        <h1>Laporan Mingguan</h1>
-      </div>
-      <!-- /.page-header -->
       <div class="row">
         <div class="col-xs-12">
           <!-- PAGE CONTENT BEGINS -->
@@ -14,59 +37,54 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
-            </button> <?php include "layouts/sidebar.php"; ?>
+            </button>
           </div>
+          <div class="page-header">
+            <h1>
+              Laporan Keuangan Mingguan
+            </h1>
+          </div><!-- /.page-header -->
+
+          <?php
+          $total_pendapatan = 0;
+          $total_pengeluaran = 0;
+
+          $monday = strtotime('last monday', strtotime('tomorrow'));
+          $sunday = strtotime('+6 days', $monday);
+          ?>
           <table id="simple-table" class="table  table-stripped table-hover">
             <thead>
               <tr>
-                <th> Dec 11-17 </th>
-                <th>
-                  <span class="text-primary">Rp. <span id="total_pendapatan_i">0</span>
+                <th class="text-left"> <?= date('M') . " " . date('d', $monday) . " - " . date('d', $sunday) . " " . date('Y') ?> </th>
+                <th class="text-right">
+                  <span class="text-primary text-right">Pendapatan</span>
                   </span>
                 </th>
-                <th>
-                  <span class="text-danger">Rp. <span id="total_pengeluaran_i">0</span>
-                  </span>
+                <th class="text-right">
+                  <span class="text-danger">Pengeluaran</span>
                 </th>
               </tr>
             </thead>
             <tbody>
+              @foreach($data['laporan_mingguan'] as $value)
+              <?php
+              $total_pendapatan += round($value->decAmountMasuk);
+              $total_pengeluaran += round($value->decAmountKeluar);
+              ?>
               <tr>
-                <td>11</td>
-                <td>Rp. 0</td>
-                <td>Rp. 0</td>
+                <td class="text-left">{{ $value->dtmTrans }}</td>
+                <td class="text-right">{{ round($value->decAmountMasuk) }}</td>
+                <td class="text-right">{{ round($value->decAmountKeluar) }}</td>
               </tr>
-              <tr>
-                <td>12</td>
-                <td>Rp. 0</td>
-                <td>Rp. 0</td>
-              </tr>
-              <tr>
-                <td>13</td>
-                <td>Rp. 0</td>
-                <td>Rp. 0</td>
-              </tr>
-              <tr>
-                <td>14</td>
-                <td>Rp. 0</td>
-                <td>Rp. 0</td>
-              </tr>
-              <tr>
-                <td>15</td>
-                <td>Rp. 0</td>
-                <td>Rp. 0</td>
-              </tr>
-              <tr>
-                <td>16</td>
-                <td>Rp. 0</td>
-                <td>Rp. 0</td>
-              </tr>
-              <tr>
-                <td>17</td>
-                <td>Rp. 0</td>
-                <td>Rp. 0</td>
-              </tr>
+              @endforeach
             </tbody>
+            <tfoot>
+              <tr class="bg-warning">
+                <th class="text-left">Grand Total</th>
+                <th class="text-right"><span class="text-primary">Rp. <span id="total_pendapatan">{{$total_pendapatan}}</span></span></th>
+                <th class="text-right"><span class="text-danger">Rp. <span id="total_pengeluaran">{{$total_pengeluaran}}</span></span></th>
+              </tr>
+            </tfoot>
           </table>
           <div class="hidden-sm hidden-xs">
             <button type="button" class="sidebar-collapse btn btn-white btn-primary" data-target="#sidebar">
@@ -77,8 +95,11 @@
         <!-- /.col -->
       </div>
       <!-- /.row -->
-    </div>
-    <!-- /.page-content -->
+    </div><!-- /.page-content -->
   </div>
-</div>
-<!-- /.main-content --> <?php include "layouts/footer.php"; ?>
+</div><!-- /.main-content -->
+@endsection
+
+@section('script_function')
+
+@endsection

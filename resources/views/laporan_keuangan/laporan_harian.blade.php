@@ -14,7 +14,7 @@
           <i class="ace-icon fa fa-home home-icon"></i>
           <a href="#">Home</a>
         </li>
-        <li class="active">Kategori Keuangan</li>
+        <li class="active">Laporan Keuangan Harian</li>
       </ul><!-- /.breadcrumb -->
 
       <div class="nav-search" id="nav-search">
@@ -41,7 +41,7 @@
           </div>
           <div class="page-header">
             <h1>
-              Kategori Keuangan
+              Laporan Keuangan Harian
               <button type="button" class="btn btn-sm btn-primary pull-right" id="btnadd" data-toggle="modal" data-target="#modal-catatan-keuangan">
                 <span class="menu-icon fa fa-plus"></span>
               </button>

@@ -64,3 +64,5 @@ Route::post('/LaporanKeuangan/update', [LaporanKeuanganController::class, 'updat
 Route::get('/LaporanKeuangan/hapus/{id}', [LaporanKeuanganController::class, 'hapus']);
 Route::get('/LaporanKeuangan/get_limit_by_category/{id}', [LaporanKeuanganController::class, 'get_limit_by_category']);
 Route::get('/LaporanKeuangan/get_total_amount_in_month/{id}', [LaporanKeuanganController::class, 'get_total_amount_in_month']);
+
+Route::get('/LaporanKeuangan/LaporanMingguan', [LaporanKeuanganController::class, 'LaporanMingguan']);
