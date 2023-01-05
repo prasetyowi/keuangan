@@ -68,3 +68,4 @@ Route::get('/LaporanKeuangan/get_total_amount_in_month/{id}', [LaporanKeuanganCo
 
 Route::get('/LaporanKeuangan/LaporanMingguan', [LaporanKeuanganController::class, 'LaporanMingguan']);
 Route::get('/LaporanKeuangan/LaporanHarianByDate/{tgl}', [LaporanKeuanganController::class, 'LaporanHarianByDate']);
+Route::get('/LaporanKeuangan/Get_category_keuangan_by_type', [LaporanKeuanganController::class, 'Get_category_keuangan_by_type']);

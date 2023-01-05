@@ -10,6 +10,7 @@ class LaporanKeuanganController extends Controller
 {
     public function index()
     {
+        $data['kategori_tipe'] = DB::table('category_keuangan')->select('szType')->where('bActive', 1)->groupBy('szType')->get();
         $data['kategori'] = DB::table('category_keuangan')->where('bActive', 1)->get();
         $data['num_rows'] = DB::table('transaksi_keuangan')->count();
         $data['kode'] = date('Ymd');
@@ -32,6 +33,7 @@ class LaporanKeuanganController extends Controller
                                         LEFT JOIN category_keuangan kategori
                                         ON kategori.szCategoryId = laporan.szCategoryId
                                         WHERE DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') = '" . date('Y-m-d') . "'
+                                        AND laporan.is_delete = 0
                                         ORDER BY DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') ASC");
 
         //return view with data
@@ -59,6 +61,7 @@ class LaporanKeuanganController extends Controller
                                         LEFT JOIN category_keuangan kategori
                                         ON kategori.szCategoryId = laporan.szCategoryId
                                         WHERE DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') = '" . date('Y-m-d') . "'
+                                        AND laporan.is_delete = 0
                                         ORDER BY DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') ASC");
 
         $data['num_rows'] = DB::table('transaksi_keuangan')->count();
@@ -88,6 +91,7 @@ class LaporanKeuanganController extends Controller
                                         LEFT JOIN category_keuangan kategori
                                         ON kategori.szCategoryId = laporan.szCategoryId
                                         WHERE DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') = '" . $tgl . "'
+                                        AND laporan.is_delete = 0
                                         ORDER BY DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') ASC");
 
         $data['num_rows'] = DB::table('transaksi_keuangan')->count();
@@ -99,6 +103,7 @@ class LaporanKeuanganController extends Controller
 
     public function LaporanHarian()
     {
+        $data['kategori_tipe'] = DB::table('category_keuangan')->select('szType')->where('bActive', 1)->groupBy('szType')->get();
         $data['kategori'] = DB::table('category_keuangan')->where('bActive', 1)->get();
         $data['num_rows'] = DB::table('transaksi_keuangan')->count();
         $data['kode'] = date('Ymd');
@@ -114,6 +119,7 @@ class LaporanKeuanganController extends Controller
                                         LEFT JOIN category_keuangan kategori
                                         ON kategori.szCategoryId = laporan.szCategoryId
                                         WHERE DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') = '" . date('Y-m-d') . "'
+                                        AND laporan.is_delete = 0
                                         ORDER BY DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') ASC");
 
         //return view with data
@@ -122,9 +128,11 @@ class LaporanKeuanganController extends Controller
 
     public function LaporanHarianByDate($tgl)
     {
+        $data['kategori_tipe'] = DB::table('category_keuangan')->select('szType')->where('bActive', 1)->groupBy('szType')->get();
         $data['kategori'] = DB::table('category_keuangan')->where('bActive', 1)->get();
         $data['num_rows'] = DB::table('transaksi_keuangan')->count();
         $data['kode'] = date('Ymd');
+        $data['tgl'] = $tgl;
 
         $data['laporan_harian'] = DB::select("SELECT
                                         laporan.szTransId,
@@ -144,6 +152,7 @@ class LaporanKeuanganController extends Controller
                                         LEFT JOIN category_keuangan kategori
                                         ON kategori.szCategoryId = laporan.szCategoryId
                                         WHERE DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') = '" . $tgl . "'
+                                        AND laporan.is_delete = 0
                                         ORDER BY DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') ASC");
 
         //return view with data
@@ -166,6 +175,7 @@ class LaporanKeuanganController extends Controller
                                                 LEFT JOIN category_keuangan kategori
                                                 ON kategori.szCategoryId = laporan.szCategoryId
                                                 WHERE DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') BETWEEN DATE_FORMAT(DATE_ADD(NOW(), INTERVAL(1-DAYOFWEEK(NOW())) DAY), '%Y-%m-%d') AND DATE_FORMAT(DATE(NOW() + INTERVAL (7 - DAYOFWEEK(NOW())) DAY), '%Y-%m-%d')
+                                                AND laporan.is_delete = 0
                                                 GROUP BY DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d')
                                                 ORDER BY DATE_FORMAT(laporan.dtmTrans, '%Y-%m-%d') ASC;");
 
@@ -188,7 +198,8 @@ class LaporanKeuanganController extends Controller
                                                 LEFT JOIN category_keuangan kategori
                                                 ON kategori.szCategoryId = laporan.szCategoryId
                                                 WHERE DATE_FORMAT(laporan.dtmTrans, '%Y') = '" . date('Y') . "'
-                                                AND DATE_FORMAT(laporan.dtmTrans, '%m') = '" . date('m') . "';");
+                                                AND DATE_FORMAT(laporan.dtmTrans, '%m') = '" . date('m') . "'
+                                                AND laporan.is_delete = 0;");
 
         //return view with data
         return view('laporan_keuangan/laporan_bulanan', compact('data'));
@@ -227,7 +238,8 @@ class LaporanKeuanganController extends Controller
             'dtmTrans' => $request->dtmTrans,
             'dtmCreated' => date('Y-m-d H:i:s'),
             'dtmLastUpdated' => date('Y-m-d H:i:s'),
-            'decAmount' => $request->decAmount
+            'decAmount' => $request->decAmount,
+            'is_delete' => 0
         ]);
 
         return response()->json([
@@ -241,7 +253,26 @@ class LaporanKeuanganController extends Controller
     public function edit($id)
     {
         // mengambil data pegawai berdasarkan id yang dipilih
-        $data = DB::table('transaksi_keuangan')->where('szTransId', $id)->get();
+        $data = DB::select("SELECT
+                            transaksi.szTransId,
+                            transaksi.szCategoryId,
+                            category.szType AS category_type,
+                            category.decLimit,
+                            transaksi.szDesc,
+                            DATE_FORMAT(transaksi.dtmTrans,'%Y-%m-%d') AS dtmTrans,
+                            DATE_FORMAT(transaksi.dtmCreated,'%Y-%m-%d') AS dtmCreated,
+                            DATE_FORMAT(transaksi.dtmLastUpdated,'%Y-%m-%d') AS dtmLastUpdated,
+                            transaksi.decAmount,
+                            (SELECT 
+                                IFNULL(SUM(laporan.decAmount),0) decAmount 
+                            FROM transaksi_keuangan laporan
+                            WHERE DATE_FORMAT(laporan.dtmTrans, '%Y') = '" . date('Y') . "'
+                            AND DATE_FORMAT(laporan.dtmTrans, '%m') = '" . date('m') . "'
+                            AND laporan.szCategoryId = transaksi.szCategoryId) AS total_amount
+                            FROM transaksi_keuangan transaksi
+                            LEFT JOIN category_keuangan category
+                            ON category.szCategoryId = transaksi.szCategoryId
+                            WHERE transaksi.szTransId = '" . $id . "' ");
         // passing data pegawai yang didapat ke view edit.blade.php
         return $data;
     }
@@ -276,7 +307,8 @@ class LaporanKeuanganController extends Controller
             'szDesc' => $request->szDesc,
             'dtmTrans' => $request->dtmTrans,
             'dtmLastUpdated' => date('Y-m-d H:i:s'),
-            'decAmount' => $request->decAmount
+            'decAmount' => $request->decAmount,
+            'is_delete' => 0
         ]);
 
         return response()->json([
@@ -291,7 +323,7 @@ class LaporanKeuanganController extends Controller
     {
         // menghapus data pegawai berdasarkan id yang dipilih
         $post = DB::table('transaksi_keuangan')->where('szTransId', $id)->update([
-            'bActive' => 0
+            'is_delete' => 1
         ]);
 
         // alihkan halaman ke halaman pegawai
@@ -314,6 +346,15 @@ class LaporanKeuanganController extends Controller
                                                 AND DATE_FORMAT(laporan.dtmTrans, '%m') = '" . date('m') . "'
                                                 AND laporan.szCategoryId = '" . $id . "' ;")[0]->decAmount;
 
+        return $data;
+    }
+
+    public function Get_category_keuangan_by_type(Request $request)
+    {
+        //get all posts from Models
+        $data = DB::table('category_keuangan')->where('szType', $request->type)->get();
+
+        //return view with data
         return $data;
     }
 }

@@ -31,7 +31,6 @@ class CategoryKeuanganController extends Controller
     // method untuk menampilkan view form tambah pegawai
     public function tambah()
     {
-
         // memanggil view tambah
         return view('tambah');
     }
@@ -40,21 +39,40 @@ class CategoryKeuanganController extends Controller
     public function add(Request $request)
     {
         //define validation rules
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'szCategoryid'     => 'required',
-                'szDesc'   => 'required',
-                'decLimit'   => 'required|numeric|min:0|not_in:0',
-                'szType'   => 'required',
-                'bActive'   => 'required',
-            ],
-            [
-                'szDesc.required' => 'Deskripsi tidak boleh kosong!',
-                'decLimit.not_in' => 'Limit tidak boleh 0!',
-                'szType.required' => 'Tipe tidak boleh kosong!'
-            ]
-        );
+        if ($request->szType == "MASUK") {
+
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'szCategoryid'     => 'required',
+                    'szDesc'   => 'required',
+                    'decLimit'   => 'required',
+                    'szType'   => 'required',
+                    'bActive'   => 'required',
+                ],
+                [
+                    'szDesc.required' => 'Deskripsi tidak boleh kosong!',
+                    'szType.required' => 'Tipe tidak boleh kosong!'
+                ]
+            );
+        } else {
+
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'szCategoryid'     => 'required',
+                    'szDesc'   => 'required',
+                    'decLimit'   => 'required|numeric|min:0|not_in:0',
+                    'szType'   => 'required',
+                    'bActive'   => 'required',
+                ],
+                [
+                    'szDesc.required' => 'Deskripsi tidak boleh kosong!',
+                    'decLimit.not_in' => 'Limit tidak boleh 0!',
+                    'szType.required' => 'Tipe tidak boleh kosong!'
+                ]
+            );
+        }
 
         //check if validation fails
         if ($validator->fails()) {
@@ -89,21 +107,40 @@ class CategoryKeuanganController extends Controller
     public function update(Request $request)
     {
         //define validation rules
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'szCategoryId'     => 'required',
-                'szDesc'   => 'required',
-                'decLimit'   => 'required|numeric|min:0|not_in:0',
-                'szType'   => 'required',
-                'bActive'   => 'required',
-            ],
-            [
-                'szDesc.required' => 'Deskripsi tidak boleh kosong!',
-                'decLimit.not_in' => 'Limit tidak boleh 0!',
-                'szType.required' => 'Tipe tidak boleh kosong!'
-            ]
-        );
+        if ($request->szType == "MASUK") {
+
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'szCategoryid'     => 'required',
+                    'szDesc'   => 'required',
+                    'decLimit'   => 'required',
+                    'szType'   => 'required',
+                    'bActive'   => 'required',
+                ],
+                [
+                    'szDesc.required' => 'Deskripsi tidak boleh kosong!',
+                    'szType.required' => 'Tipe tidak boleh kosong!'
+                ]
+            );
+        } else {
+
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'szCategoryid'     => 'required',
+                    'szDesc'   => 'required',
+                    'decLimit'   => 'required|numeric|min:0|not_in:0',
+                    'szType'   => 'required',
+                    'bActive'   => 'required',
+                ],
+                [
+                    'szDesc.required' => 'Deskripsi tidak boleh kosong!',
+                    'decLimit.not_in' => 'Limit tidak boleh 0!',
+                    'szType.required' => 'Tipe tidak boleh kosong!'
+                ]
+            );
+        }
 
         //check if validation fails
         if ($validator->fails()) {

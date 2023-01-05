@@ -59,7 +59,7 @@
 	<div id="navbar" class="navbar navbar-default navbar-collapse h-navbar ace-save-state">
 		<div class="navbar-container ace-save-state" id="navbar-container">
 			<div class="navbar-header pull-left">
-				<a href="index.php" class="navbar-brand">
+				<a href="/LaporanKeuangan" class="navbar-brand">
 					<small> Catatan Keuangan</small>
 				</a>
 			</div>

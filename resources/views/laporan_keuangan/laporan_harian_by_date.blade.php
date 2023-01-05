@@ -8,24 +8,6 @@
 @section('konten')
 <div class="main-content">
     <div class="main-content-inner">
-        <div class="breadcrumbs ace-save-state" id="breadcrumbs">
-            <ul class="breadcrumb">
-                <li>
-                    <i class="ace-icon fa fa-home home-icon"></i>
-                    <a href="#">Home</a>
-                </li>
-                <li class="active">Laporan Keuangan Harian</li>
-            </ul><!-- /.breadcrumb -->
-
-            <div class="nav-search" id="nav-search">
-                <form class="form-search">
-                    <span class="input-icon">
-                        <input type="text" placeholder="Search ..." class="nav-search-input" id="nav-search-input" autocomplete="off" />
-                        <i class="ace-icon fa fa-search nav-search-icon"></i>
-                    </span>
-                </form>
-            </div><!-- /.nav-search -->
-        </div>
 
         <div class="page-content">
             <div class="row">
@@ -55,10 +37,12 @@
 
                     <input type="hidden" id="kode" value="{{ $data['kode'] }}">
                     <input type="hidden" id="num_rows" value="{{ $data['num_rows'] + 1 }}">
+                    <input type="hidden" id="tgl_transaksi" value="{{ date('Y-m-d', strtotime($data['tgl'])) }}">
+
                     <table id="table-laporan-keuangan" class="table table-stripped table-hover">
                         <thead>
                             <tr>
-                                <th colspan="2" class="text-left"><?= date('d-m-Y'); ?></th>
+                                <th colspan="2" class="text-left">{{ date('d-m-Y', strtotime($data['tgl'])) }}</th>
                                 <th class="text-right"><span class="text-primary">Pendapatan</span></th>
                                 <th class="text-right"><span class="text-danger">Pengeluaran</span></th>
                             </tr>
@@ -70,19 +54,17 @@
                             $total_pengeluaran += round($value->decAmountKeluar);
                             ?>
                             <tr>
-                                <td class="text-left">
-                                    {{ $value->kategori_desc }}
-                                    <input type="hidden" id="tgl_transaksi" value="{{ $value->dtmTrans }}">
-                                </td>
-                                <td class="text-left">{{ $value->szDesc }}</td>
-                                <td class="text-right">Rp. {{ round($value->decAmountMasuk) }}</td>
-                                <td class="text-right">Rp. {{ round($value->decAmountKeluar) }}</td>
+                                <td class="text-left"><a href="#" onclick="EditKeuangan('{{ $value->szTransId }}')">{{ $value->kategori_desc }}</a></td>
+                                <td class="text-left"><a href="#" onclick="EditKeuangan('{{ $value->szTransId }}')">{{ $value->szDesc }}</a></td>
+                                <td class="text-right"><a href="#" onclick="EditKeuangan('{{ $value->szTransId }}')">Rp. {{ round($value->decAmountMasuk) }}</a></td>
+                                <td class="text-right"><a href="#" onclick="EditKeuangan('{{ $value->szTransId }}')">Rp. {{ round($value->decAmountKeluar) }}</a></td>
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot>
                             <tr class="bg-warning">
-                                <th class="text-left" colspan="2">Grand Total</th>
+                                <th class="text-left">Grand Total</th>
+                                <th class="text-right">Rp. <span id="total_keuangan">{{$total_pendapatan - $total_pengeluaran}}</span></th>
                                 <th class="text-right"><span class="text-primary">Rp. <span id="total_pendapatan">{{$total_pendapatan}}</span></span></th>
                                 <th class="text-right"><span class="text-danger">Rp. <span id="total_pengeluaran">{{$total_pengeluaran}}</span></span></th>
                             </tr>
@@ -109,16 +91,29 @@
                             <div class="row">
                                 <div class="col-xs-12 col-sm-12">
 
-                                    <input type="hidden" id="action" value="">
+                                    <input type="hidden" id="action" value="add">
                                     <input type="hidden" id="LaporanKeuangan-szTransId" value="">
                                     <input type="hidden" id="LaporanKeuangan-decLimit" value="">
                                     <input type="hidden" id="LaporanKeuangan-decMax" value="">
                                     <input type="hidden" id="LaporanKeuangan-decTotalAmount" value="">
 
                                     <div class="form-group">
+                                        <label for="form-field-select-3">Kategori Tipe</label>
+                                        <div>
+                                            <select class="form-control" id="LaporanKeuangan-szCategoryType" data-placeholder="Choose a State..." style="width:100%;" onchange="Get_category_keuangan_by_type(this.value,'add')">
+                                                <option value="">** Pilih Tipe **</option>
+                                                @foreach($data['kategori_tipe'] as $value)
+                                                <option value="{{ $value->szType }}">{{ $value->szType }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="space-2"></div>
+
+                                    <div class="form-group">
                                         <label for="form-field-select-3">Kategori</label>
                                         <div>
-                                            <select class="form-control" id="LaporanKeuangan-szCategoryId" data-placeholder="Choose a State..." style="width:100%;" onchange="GetLimitByCategory(this.value)">
+                                            <select class="form-control" id="LaporanKeuangan-szCategoryId" data-placeholder="Choose a State..." style="width:100%;" onchange="GetLimitByCategory(this.value,'add')">
                                                 <option value="">** Pilih Tipe **</option>
                                                 @foreach($data['kategori'] as $value)
                                                 <option value="{{ $value->szCategoryId }}">{{ $value->szDesc }}</option>
@@ -168,6 +163,91 @@
                     </div>
                 </div>
             </div>
+            <div class="modal" id="modal-catatan-keuangan-edit">
+                <div class="modal-dialog modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">Edit Catatan Keuangan</h4>
+                        </div>
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-12">
+
+                                    <input type="hidden" id="action" value="edit">
+                                    <input type="hidden" id="LaporanKeuangan-szTransId_edit" value="">
+                                    <input type="hidden" id="LaporanKeuangan-decLimit_edit" value="">
+                                    <input type="hidden" id="LaporanKeuangan-decMax_edit" value="">
+                                    <input type="hidden" id="LaporanKeuangan-decTotalAmount_edit" value="">
+
+                                    <div class="form-group">
+                                        <label for="form-field-select-3">Kategori Tipe</label>
+                                        <div>
+                                            <select class="form-control" id="LaporanKeuangan-szCategoryType_edit" data-placeholder="Choose a State..." style="width:100%;" onchange="Get_category_keuangan_by_type(this.value,'edit')">
+                                                <option value="">** Pilih Tipe **</option>
+                                                @foreach($data['kategori_tipe'] as $value)
+                                                <option value="{{ $value->szType }}">{{ $value->szType }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="space-2"></div>
+
+                                    <div class="form-group">
+                                        <label for="form-field-select-3">Kategori</label>
+                                        <div>
+                                            <select class="form-control" id="LaporanKeuangan-szCategoryId_edit" data-placeholder="Choose a State..." style="width:100%;" onchange="GetLimitByCategory(this.value,'edit')">
+                                                <option value="">** Pilih Tipe **</option>
+                                                @foreach($data['kategori'] as $value)
+                                                <option value="{{ $value->szCategoryId }}">{{ $value->szDesc }}</option>
+                                                @endforeach
+                                            </select>
+                                            <div class="alert alert-danger d-none" role="alert" id="alert-szCategoryId_edit" style="display: none;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="space-2"></div>
+
+                                    <div class="form-group">
+                                        <label for="LaporanKeuangan-szDesc">Deskripsi</label>
+                                        <div>
+                                            <input type="text" id="LaporanKeuangan-szDesc_edit" placeholder="Deskripsi" value="" style="width:100%" />
+                                            <div class="alert alert-danger d-none" role="alert" id="alert-szDesc_edit" style="display: none;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="space-2"></div>
+
+                                    <div class="form-group">
+                                        <label for="LaporanKeuangan-decLimit">Tanggal Transaksi</label>
+                                        <div>
+                                            <input class="form-control date-picker" id="LaporanKeuangan-dtmTrans_edit" type="text" data-date-format="yyyy-mm-dd" style="width:100%" value="<?= date('Y-m-d') ?>" />
+                                            <div class="alert alert-danger d-none" role="alert" id="alert-dtmTrans_edit" style="display: none;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="space-2"></div>
+
+                                    <div class="form-group">
+                                        <label for="LaporanKeuangan-decAmount">Jumlah</label>
+                                        <div>
+                                            <input type="text" id="LaporanKeuangan-decAmount_edit" placeholder="Rp." value="0" style="width:100%" />
+                                            <div class="alert alert-danger d-none" role="alert" id="alert-decAmount_edit" style="display: none;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="space-2"></div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Modal footer -->
+                        <div class="modal-footer">
+                            <span id="loadingkeuangan" style="display: none;"><i class="ace-icon fa fa-refresh fa-spin"></i> Loading</span>
+                            <button type="button" class="btn btn-success" id="btnupdate">Simpan</button>
+                            <button type="button" class="btn btn-danger" id="btndelete">Hapus</button>
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div><!-- /.page-content -->
     </div>
 </div><!-- /.main-content -->
@@ -182,6 +262,7 @@
         var total_pengeluaran = 0;
         var tgl_transaksi = $("#tgl_transaksi").val();
 
+        $("#total_keuangan").html('');
         $("#total_pendapatan").html('');
         $("#total_pengeluaran").html('');
 
@@ -197,19 +278,20 @@
 
                 $.each(response.laporan_harian, function(i, v) {
                     $("#table-laporan-keuangan > tbody").append(`
-                        <tr>
-                        <td class="text-left">${v.kategori_desc}</td>
-                        <td class="text-left">${v.szDesc}</td>
-                        <td class="text-right">Rp. ${Math.round(v.decAmountMasuk)}</td>
-                        <td class="text-right">Rp. ${Math.round(v.decAmountKeluar)}</td>
-                        </tr>
-                    `);
+            <tr>
+              <td class="text-left"><a href="#" onclick="EditKeuangan('${v.szTransId}')">${v.kategori_desc}</a></td>
+              <td class="text-left"><a href="#" onclick="EditKeuangan('${v.szTransId}')">${v.szDesc}</a></td>
+              <td class="text-right"><a href="#" onclick="EditKeuangan('${v.szTransId}')">Rp. ${Math.round(v.decAmountMasuk)}</a></td>
+              <td class="text-right"><a href="#" onclick="EditKeuangan('${v.szTransId}')">Rp. ${Math.round(v.decAmountKeluar)}</a></td>
+            </tr>
+          `);
 
                     total_pendapatan += Math.round(v.decAmountMasuk);
                     total_pengeluaran += Math.round(v.decAmountKeluar);
 
                 });
 
+                $("#total_keuangan").append(total_pendapatan - total_pengeluaran);
                 $("#total_pendapatan").append(total_pendapatan);
                 $("#total_pengeluaran").append(total_pengeluaran);
             }
@@ -219,9 +301,7 @@
 
     function EditKeuangan(id) {
 
-        $("#modal-catatan-keuangan").modal('show');
-        $("#action").val("edit");
-        $("#LaporanKeuangan-szCategoryId").val(id);
+        $("#modal-catatan-keuangan-edit").modal('show');
 
         $.ajax({
             async: false,
@@ -230,8 +310,24 @@
             dataType: "JSON",
             success: function(response) {
                 $.each(response, function(i, v) {
-                    $("#LaporanKeuangan-szDesc").val(v.szDesc);
-                    $("#LaporanKeuangan-decLimit").val(Math.round(v.decLimit));
+                    $("#LaporanKeuangan-szTransId_edit").val(v.szTransId);
+                    $("#LaporanKeuangan-szDesc_edit").val(v.szDesc);
+                    $("#LaporanKeuangan-dtmTrans_edit").val(v.dtmTrans);
+                    $("#LaporanKeuangan-decAmount_edit").val(v.decAmount);
+                    $("#LaporanKeuangan-decLimit_edit").val(v.decLimit);
+                    $("#LaporanKeuangan-decTotalAmount_edit").val(v.total_amount);
+
+                    $("#LaporanKeuangan-szCategoryId_edit").html('');
+                    $("#LaporanKeuangan-szCategoryId_edit").append(`<option value="">** Pilih Tipe **</option>`);
+                    <?php foreach ($data['kategori'] as $value) : ?>
+                        $("#LaporanKeuangan-szCategoryId_edit").append(`<option value="<?= $value->szCategoryId ?>" ${v.szCategoryId == '<?= $value->szCategoryId ?>' ? 'selected' : ''}><?= $value->szDesc ?></option>`);
+                    <?php endforeach; ?>
+
+                    $("#LaporanKeuangan-szCategoryType_edit").html('');
+                    $("#LaporanKeuangan-szCategoryType_edit").append(`<option value="">** Pilih Tipe **</option>`);
+                    <?php foreach ($data['kategori_tipe'] as $value) : ?>
+                        $("#LaporanKeuangan-szCategoryType_edit").append(`<option value="<?= $value->szType ?>" ${v.category_type == '<?= $value->szType ?>' ? 'selected' : ''}><?= $value->szType ?></option>`);
+                    <?php endforeach; ?>
 
                 });
             }
@@ -275,19 +371,79 @@
         });
     }
 
-    function GetLimitByCategory(szCategoryId) {
-        $.ajax({
-            async: false,
-            type: 'GET',
-            url: "/LaporanKeuangan/get_limit_by_category/" + szCategoryId,
-            dataType: "JSON",
-            success: function(response) {
-                $("#LaporanKeuangan-decLimit").val(response.limit);
-                $("#LaporanKeuangan-decTotalAmount").val(response.total_amount);
+    function GetLimitByCategory(szCategoryId, act) {
+        if (act == "add") {
+            $.ajax({
+                async: false,
+                type: 'GET',
+                url: "/LaporanKeuangan/get_limit_by_category/" + szCategoryId,
+                dataType: "JSON",
+                success: function(response) {
+                    $("#LaporanKeuangan-decLimit").val(response.limit);
+                    $("#LaporanKeuangan-decTotalAmount").val(response.total_amount);
+                }
+            });
 
-                alert(response.total_amount)
-            }
-        });
+        } else if (act == "edit") {
+            $.ajax({
+                async: false,
+                type: 'GET',
+                url: "/LaporanKeuangan/get_limit_by_category/" + szCategoryId,
+                dataType: "JSON",
+                success: function(response) {
+                    $("#LaporanKeuangan-decLimit_edit").val(response.limit);
+                    $("#LaporanKeuangan-decTotalAmount_edit").val(response.total_amount);
+                }
+            });
+
+        }
+
+    }
+
+    function Get_category_keuangan_by_type(type, act) {
+        if (act == "add") {
+            $.ajax({
+                async: false,
+                type: 'GET',
+                url: "/LaporanKeuangan/Get_category_keuangan_by_type",
+                data: {
+                    type: type
+                },
+                dataType: "JSON",
+                success: function(response) {
+                    $("#LaporanKeuangan-szCategoryId").html('');
+
+                    $("#LaporanKeuangan-szCategoryId").append(`<option value="">** Pilih Tipe **</option>`);
+                    if (response != "") {
+                        $.each(response, function(i, v) {
+                            $("#LaporanKeuangan-szCategoryId").append(`<option value="${v.szCategoryId}">${v.szDesc}</option>`);
+                        });
+                    }
+                }
+            });
+
+        } else if (act == "edit") {
+            $.ajax({
+                async: false,
+                type: 'GET',
+                url: "/LaporanKeuangan/Get_category_keuangan_by_type",
+                data: {
+                    type: type
+                },
+                dataType: "JSON",
+                success: function(response) {
+                    $("#LaporanKeuangan-szCategoryId_edit").html('');
+
+                    $("#LaporanKeuangan-szCategoryId_edit").append(`<option value="">** Pilih Tipe **</option>`);
+                    if (response != "") {
+                        $.each(response, function(i, v) {
+                            $("#LaporanKeuangan-szCategoryId_edit").append(`<option value="${v.szCategoryId}">${v.szDesc}</option>`);
+                        });
+                    }
+                }
+            });
+
+        }
 
     }
 
@@ -324,9 +480,93 @@
                 szTransId = $("#kode").val() + $("#num_rows").val();
             }
 
-            // alert(total_amount + " - " + limit)
+            if ($("#LaporanKeuangan-szCategoryType").val() == "KELUAR") {
 
-            if (total_amount <= limit) {
+                if (total_amount <= limit) {
+
+                    $("#loadingkeuangan").show();
+                    $("#btnsave").prop("disabled", true);
+
+                    $.ajax({
+                        async: false,
+                        type: 'POST',
+                        url: "/LaporanKeuangan/add",
+                        data: {
+                            szTransId: szTransId,
+                            szCategoryId: $("#LaporanKeuangan-szCategoryId").val(),
+                            szDesc: $("#LaporanKeuangan-szDesc").val(),
+                            dtmTrans: $("#LaporanKeuangan-dtmTrans").val(),
+                            decAmount: $("#LaporanKeuangan-decAmount").val(),
+                            "_token": $("meta[name='csrf-token']").attr("content")
+                        },
+                        dataType: "JSON",
+                        success: function(response) {
+                            $("#loadingkeuangan").hide();
+                            $("#btnsave").prop("disabled", false);
+
+                            if (response.success === true) {
+                                Swal.fire({
+                                    type: 'success',
+                                    icon: 'success',
+                                    title: `${response.message}`,
+                                    showConfirmButton: false,
+                                    timer: 3000
+                                });
+
+                                $("#modal-catatan-keuangan").modal('hide');
+
+                                GetAllLaporanByDate();
+                            }
+
+                        },
+                        error: function(error) {
+
+                            $("#loadingkeuangan").hide();
+                            $("#btnsave").prop("disabled", false);
+
+                            if (error.responseJSON.szDesc) {
+
+                                //show alert
+                                $('#alert-szDesc').show();
+                                $('#alert-szDesc').removeClass('d-none');
+                                $('#alert-szDesc').addClass('d-block');
+
+                                //add message to alert
+                                $('#alert-szDesc').html(error.responseJSON.szDesc[0]);
+                            }
+
+                            if (error.responseJSON.decLimit) {
+
+                                //show alert
+                                $('#alert-decLimit').show();
+                                $('#alert-decLimit').removeClass('d-none');
+                                $('#alert-decLimit').addClass('d-block');
+
+                                //add message to alert
+                                $('#alert-decLimit').html(error.responseJSON.decLimit[0]);
+                            }
+
+                            if (error.responseJSON.szType) {
+
+                                //show alert
+                                $('#alert-szType').show();
+                                $('#alert-szType').removeClass('d-none');
+                                $('#alert-szType').addClass('d-block');
+
+                                //add message to alert
+                                $('#alert-szType').html(error.responseJSON.szType[0]);
+                            }
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        type: 'error',
+                        icon: 'error',
+                        title: 'Melebihi nilai limit'
+                    });
+                }
+
+            } else {
 
                 $("#loadingkeuangan").show();
                 $("#btnsave").prop("disabled", true);
@@ -402,12 +642,7 @@
                         }
                     }
                 });
-            } else {
-                Swal.fire({
-                    type: 'error',
-                    icon: 'error',
-                    title: 'Melebihi nilai limit'
-                });
+
             }
 
         } else if (act == "edit") {
@@ -486,6 +721,218 @@
                 }
             });
         }
+
+    });
+
+    $("#btnupdate").click(function() {
+        var szTransId = "";
+        var act = $("#action").val();
+        var amount = parseInt($("#LaporanKeuangan-decAmount_edit").val());
+        var total_amount = parseInt($("#LaporanKeuangan-decTotalAmount_edit").val()) + amount;
+        var limit = parseInt($("#LaporanKeuangan-decLimit_edit").val());
+
+        if ($("#LaporanKeuangan-szCategoryType_edit").val() == "KELUAR") {
+
+            if (total_amount <= limit) {
+
+                $("#loadingkeuanganupdate").show();
+                $("#btnupdate").prop("disabled", true);
+
+                $.ajax({
+                    async: false,
+                    type: 'POST',
+                    url: "/LaporanKeuangan/update",
+                    data: {
+                        szTransId: $("#LaporanKeuangan-szTransId_edit").val(),
+                        szCategoryId: $("#LaporanKeuangan-szCategoryId_edit").val(),
+                        szDesc: $("#LaporanKeuangan-szDesc_edit").val(),
+                        dtmTrans: $("#LaporanKeuangan-dtmTrans_edit").val(),
+                        decAmount: $("#LaporanKeuangan-decAmount_edit").val(),
+                        "_token": $("meta[name='csrf-token']").attr("content")
+                    },
+                    dataType: "JSON",
+                    success: function(response) {
+                        $("#loadingkeuanganupdate").hide();
+                        $("#btnupdate").prop("disabled", false);
+
+                        if (response.success === true) {
+                            Swal.fire({
+                                type: 'success',
+                                icon: 'success',
+                                title: `${response.message}`,
+                                showConfirmButton: false,
+                                timer: 3000
+                            });
+
+                            $("#modal-catatan-keuangan-edit").modal('hide');
+
+                            GetAllLaporanByDate();
+                        }
+
+                    },
+                    error: function(error) {
+
+                        $("#loadingkeuanganupdate").hide();
+                        $("#btnupdate").prop("disabled", false);
+
+                        if (error.responseJSON.szDesc) {
+
+                            //show alert
+                            $('#alert-szDesc_edit').show();
+                            $('#alert-szDesc_edit').removeClass('d-none');
+                            $('#alert-szDesc_edit').addClass('d-block');
+
+                            //update message to alert
+                            $('#alert-szDesc_edit').html(error.responseJSON.szDesc[0]);
+                        }
+
+                        if (error.responseJSON.decLimit) {
+
+                            //show alert
+                            $('#alert-decLimit_edit').show();
+                            $('#alert-decLimit_edit').removeClass('d-none');
+                            $('#alert-decLimit_edit').addClass('d-block');
+
+                            //update message to alert
+                            $('#alert-decLimit_edit').html(error.responseJSON.decLimit[0]);
+                        }
+
+                        if (error.responseJSON.szType) {
+
+                            //show alert
+                            $('#alert-szType_edit').show();
+                            $('#alert-szType_edit').removeClass('d-none');
+                            $('#alert-szType_edit').addClass('d-block');
+
+                            //update message to alert
+                            $('#alert-szType_edit').html(error.responseJSON.szType[0]);
+                        }
+                    }
+                });
+            } else {
+                Swal.fire({
+                    type: 'error',
+                    icon: 'error',
+                    title: 'Melebihi nilai limit'
+                });
+            }
+
+        } else {
+
+            $("#loadingkeuanganupdate").show();
+            $("#btnupdate").prop("disabled", true);
+
+            $.ajax({
+                async: false,
+                type: 'POST',
+                url: "/LaporanKeuangan/update",
+                data: {
+                    szTransId: szTransId,
+                    szCategoryId: $("#LaporanKeuangan-szCategoryId_edit").val(),
+                    szDesc: $("#LaporanKeuangan-szDesc_edit").val(),
+                    dtmTrans: $("#LaporanKeuangan-dtmTrans_edit").val(),
+                    decAmount: $("#LaporanKeuangan-decAmount_edit").val(),
+                    "_token": $("meta[name='csrf-token']").attr("content")
+                },
+                dataType: "JSON",
+                success: function(response) {
+                    $("#loadingkeuanganupdate").hide();
+                    $("#btnupdate").prop("disabled", false);
+
+                    if (response.success === true) {
+                        Swal.fire({
+                            type: 'success',
+                            icon: 'success',
+                            title: `${response.message}`,
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+
+                        $("#modal-catatan-keuangan-edit").modal('hide');
+
+                        GetAllLaporanByDate();
+                    }
+
+                },
+                error: function(error) {
+
+                    $("#loadingkeuanganupdate").hide();
+                    $("#btnupdate").prop("disabled", false);
+
+                    if (error.responseJSON.szDesc) {
+
+                        //show alert
+                        $('#alert-szDesc_edit').show();
+                        $('#alert-szDesc_edit').removeClass('d-none');
+                        $('#alert-szDesc_edit').addClass('d-block');
+
+                        //update message to alert
+                        $('#alert-szDesc_edit').html(error.responseJSON.szDesc[0]);
+                    }
+
+                    if (error.responseJSON.decLimit) {
+
+                        //show alert
+                        $('#alert-decLimit_edit').show();
+                        $('#alert-decLimit_edit').removeClass('d-none');
+                        $('#alert-decLimit_edit').addClass('d-block');
+
+                        //update message to alert
+                        $('#alert-decLimit_edit').html(error.responseJSON.decLimit[0]);
+                    }
+
+                    if (error.responseJSON.szType) {
+
+                        //show alert
+                        $('#alert-szType_edit').show();
+                        $('#alert-szType_edit').removeClass('d-none');
+                        $('#alert-szType_edit').addClass('d-block');
+
+                        //update message to alert
+                        $('#alert-szType_edit').html(error.responseJSON.szType[0]);
+                    }
+                }
+            });
+
+        }
+
+    });
+
+    $("#btndelete").click(function() {
+        $("#loadingkeuanganupdate").show();
+        $("#btndelete").prop("disabled", true);
+
+        $.ajax({
+            async: false,
+            type: 'GET',
+            url: "/LaporanKeuangan/hapus/" + $("#LaporanKeuangan-szTransId_edit").val(),
+            dataType: "JSON",
+            success: function(response) {
+                $("#loadingkeuanganupdate").hide();
+                $("#btndelete").prop("disabled", false);
+
+                if (response.success === true) {
+                    Swal.fire({
+                        type: 'success',
+                        icon: 'success',
+                        title: `${response.message}`,
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+
+                    $("#modal-catatan-keuangan-edit").modal('hide');
+
+                    GetAllLaporanByDate();
+                }
+
+            },
+            error: function(error) {
+
+                $("#loadingkeuanganupdate").hide();
+                $("#btnupdate").prop("disabled", false);
+
+            }
+        });
 
     });
 </script>
