@@ -185,7 +185,7 @@ class LaporanKeuanganController extends Controller
 
     public function LaporanBulanan()
     {
-        $data['laporan_harian'] = DB::select("SELECT
+        $data['laporan_bulanan'] = DB::select("SELECT
                                                 SUM(CASE
                                                     WHEN kategori.szType = 'MASUK' THEN laporan.decAmount
                                                     ELSE 0

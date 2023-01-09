@@ -30,6 +30,7 @@
           <?php
           $total_pendapatan = 0;
           $total_pengeluaran = 0;
+          $total_keuangan = 0;
 
           $monday = strtotime('last monday', strtotime('tomorrow'));
           $sunday = strtotime('+6 days', $monday);
@@ -37,7 +38,7 @@
           <table id="simple-table" class="table  table-stripped table-hover">
             <thead>
               <tr>
-                <th class="text-left"> <?= date('M') . " " . date('d', $monday) . " - " . date('d', $sunday) . " " . date('Y') ?> </th>
+                <th class="text-left" colspan="2"> <?= date('M') . " " . date('d', $monday) . " - " . date('d', $sunday) . " " . date('Y') ?> </th>
                 <th class="text-right">
                   <span class="text-primary text-right">Pendapatan</span>
                   </span>
@@ -54,7 +55,7 @@
               $total_pengeluaran += round($value->decAmountKeluar);
               ?>
               <tr>
-                <td class="text-left">
+                <td class="text-left" colspan="2">
                   <a href="/LaporanKeuangan/LaporanHarianByDate/<?= date('Y-m-d', strtotime($value->dtmTrans)) ?>"> {{ $value->dtmTrans }}</a>
                 </td>
                 <td class="text-right"><a href="/LaporanKeuangan/LaporanHarianByDate/<?= date('Y-m-d', strtotime($value->dtmTrans)) ?>">Rp. {{ round($value->decAmountMasuk) }}</a></td>
@@ -65,8 +66,9 @@
             <tfoot>
               <tr class="bg-warning">
                 <th class="text-left">Grand Total</th>
-                <th class="text-right"><span class="text-primary">Rp. <span id="total_pendapatan">{{$total_pendapatan}}</span></span></th>
-                <th class="text-right"><span class="text-danger">Rp. <span id="total_pengeluaran">{{$total_pengeluaran}}</span></span></th>
+                <th class="text-right"><span class="text-primary">Rp. <span id="total_keuangan">{{$total_pendapatan - $total_pengeluaran}}</span></th>
+                <th class="text-right"><span class="text-primary">Rp. <span id="total_pendapatan">{{$total_pendapatan}}</span></th>
+                <th class="text-right"><span class="text-danger">Rp. <span id="total_pengeluaran">{{$total_pengeluaran}}</span></th>
               </tr>
             </tfoot>
           </table>

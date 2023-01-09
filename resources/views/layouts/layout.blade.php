@@ -25,6 +25,7 @@
 	<link rel="stylesheet" href="{{asset('assets/css/daterangepicker.min.css')}}" />
 	<link rel="stylesheet" href="{{asset('assets/css/bootstrap-datetimepicker.min.css')}}" />
 	<link rel="stylesheet" href="{{asset('assets/css/bootstrap-colorpicker.min.css')}}" />
+	<link rel="stylesheet" href="{{asset('assets/css/fullcalendar.min.css')}}" />
 
 	<!-- text fonts -->
 	<link rel="stylesheet" href="{{asset('assets/css/fonts.googleapis.com.css')}}" />
@@ -178,6 +179,7 @@
 	<script src="{{asset('assets/js/jquery.inputlimiter.min.js')}}"></script>
 	<script src="{{asset('assets/js/jquery.maskedinput.min.js')}}"></script>
 	<script src="{{asset('assets/js/bootstrap-tag.min.js')}}"></script>
+	<script src="{{asset('assets/js/fullcalendar.min.js')}}"></script>
 
 	<!-- ace scripts -->
 	<script src="{{asset('assets/js/ace-elements.min.js')}}"></script>
