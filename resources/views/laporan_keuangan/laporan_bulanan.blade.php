@@ -77,7 +77,11 @@
       center: 'title',
       right: 'month,agendaWeek,agendaDay'
     },
-    events: [{
+    events: [
+      <?php foreach ($data['laporan_bulanan'] as $value) : ?>
+      <?php endforeach ?>
+
+      {
         title: 'All Day Event',
         start: new Date(y, m, 1),
         className: 'label-important'
