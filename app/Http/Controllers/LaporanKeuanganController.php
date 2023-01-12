@@ -183,26 +183,57 @@ class LaporanKeuanganController extends Controller
         return view('laporan_keuangan/laporan_mingguan', compact('data'));
     }
 
-    public function LaporanBulanan()
+    public function LaporanBulanan(Request $request)
     {
-        $data['laporan_bulanan'] = DB::select("SELECT
-                                                SUM(CASE
-                                                    WHEN kategori.szType = 'MASUK' THEN laporan.decAmount
-                                                    ELSE 0
-                                                END) decAmountMasuk,
-                                                SUM(CASE
-                                                    WHEN kategori.szType = 'KELUAR' THEN laporan.decAmount
-                                                    ELSE 0
-                                                END) decAmountKeluar
+        //return view with data
+        return view('laporan_keuangan/laporan_bulanan');
+    }
+
+    public function GetLaporanBulanan(Request $request)
+    {
+        $tgl1 = date('Y-m-d', strtotime($request->start));
+        $tgl2 = date('Y-m-d', strtotime($request->end));
+
+        $data = DB::select("SELECT
+                                                laporan.szTransId,
+                                                laporan.szDesc,
+                                                DATE_FORMAT(laporan.dtmTrans,'%Y-%m-%d') AS dtmTrans,
+                                                kategori.szType,
+                                                IFNULL(laporan.decAmount,0) decAmount
                                                 FROM transaksi_keuangan laporan
                                                 LEFT JOIN category_keuangan kategori
                                                 ON kategori.szCategoryId = laporan.szCategoryId
-                                                WHERE DATE_FORMAT(laporan.dtmTrans, '%Y') = '" . date('Y') . "'
-                                                AND DATE_FORMAT(laporan.dtmTrans, '%m') = '" . date('m') . "'
-                                                AND laporan.is_delete = 0;");
+                                                WHERE DATE_FORMAT(laporan.dtmTrans,'%Y-%m-%d') BETWEEN '" . $tgl1 . "' AND '" . $tgl2 . "'
+                                                AND laporan.is_delete = 0");
 
         //return view with data
-        return view('laporan_keuangan/laporan_bulanan', compact('data'));
+        return $data;
+        // return view('laporan_keuangan/laporan_bulanan', compact('data'));
+    }
+
+    public function GetTotalLaporanBulanan(Request $request)
+    {
+        $bulan = date('m', strtotime($request->tgl));
+        $tahun = date('Y', strtotime($request->tgl));
+
+        $data = DB::select("SELECT
+                            SUM(CASE
+                                WHEN kategori.szType = 'MASUK' THEN laporan.decAmount
+                                ELSE 0
+                            END) total_pendapatan,
+                            SUM(CASE
+                                WHEN kategori.szType = 'KELUAR' THEN laporan.decAmount
+                                ELSE 0
+                            END) total_pengeluaran
+                            FROM transaksi_keuangan laporan
+                            LEFT JOIN category_keuangan kategori
+                            ON kategori.szCategoryId = laporan.szCategoryId
+                            WHERE DATE_FORMAT(laporan.dtmTrans, '%m') = '" . $bulan . "'
+                            AND DATE_FORMAT(laporan.dtmTrans, '%Y') = '" . $tahun . "'");
+
+        //return view with data
+        return $data;
+        // return view('laporan_keuangan/laporan_bulanan', compact('data'));
     }
 
     // method untuk insert data ke table pegawai
